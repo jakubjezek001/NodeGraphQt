@@ -126,10 +126,7 @@ class AutoNode(BaseNode, QtCore.QObject):
         Args:
             port(str/int/Port): input port name/index/object.
         """
-        if type(port) is not Port:
-            to_port = self.get_input(port)
-        else:
-            to_port = port
+        to_port = self.get_input(port) if type(port) is not Port else port
         if to_port is None:
             return copy.deepcopy(self.defaultValue)
 
@@ -203,10 +200,10 @@ class AutoNode(BaseNode, QtCore.QObject):
         if to_port.data_type != from_port.data_type:
             if to_port.data_type == 'NoneType' or from_port.data_type == 'NoneType':
                 return True
-            for types in self.matchTypes:
-                if to_port.data_type in types and from_port.data_type in types:
-                    return True
-            return False
+            return any(
+                to_port.data_type in types and from_port.data_type in types
+                for types in self.matchTypes
+            )
 
         return True
 
@@ -245,7 +242,9 @@ class AutoNode(BaseNode, QtCore.QObject):
 
             current_port.border_color = current_port.color = CryptoColors.get(data_type)
             conn_type = 'multi' if current_port.multi_connection() else 'single'
-            current_port.view.setToolTip('{}: {} ({}) '.format(current_port.name(), data_type, conn_type))
+            current_port.view.setToolTip(
+                f'{current_port.name()}: {data_type} ({conn_type}) '
+            )
 
     def add_input(self, name='input', data_type='', multi_input=False, display_name=True,
                   color=None, painter_func=None):
@@ -289,9 +288,9 @@ class AutoNode(BaseNode, QtCore.QObject):
         if message is None:
             tooltip = self._toolTip.format(self._cook_time)
         else:
-            tooltip = '<b>{}</b>'.format(self.name())
+            tooltip = f'<b>{self.name()}</b>'
             tooltip += message
-            tooltip += '<br/>{}<br/>'.format(self._view.type_)
+            tooltip += f'<br/>{self._view.type_}<br/>'
         self.view.setToolTip(tooltip)
         return tooltip
 
@@ -316,7 +315,7 @@ class AutoNode(BaseNode, QtCore.QObject):
         self._error = True
         self.color_effect.setEnabled(True)
         self.color_effect.setColor(QtGui.QColor(*self.errorColor))
-        tooltip = '<font color="red"><br>({})</br></font>'.format(message)
+        tooltip = f'<font color="red"><br>({message})</br></font>'
         self._update_tool_tip(tooltip)
 
     # def __del__(self):

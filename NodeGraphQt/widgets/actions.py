@@ -34,9 +34,8 @@ class BaseMenu(QtWidgets.QMenu):
         menus = []
         for action in self.actions():
             menu = action.menu()
-            if menu.node_class:
-                if issubclass(menu.node_class, node_class):
-                    menus.append(menu)
+            if menu.node_class and issubclass(menu.node_class, node_class):
+                menus.append(menu)
         return menus
 
 

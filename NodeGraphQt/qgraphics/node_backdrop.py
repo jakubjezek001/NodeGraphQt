@@ -110,8 +110,7 @@ class BackdropNodeItem(AbstractNodeItem):
         return rect
 
     def mouseDoubleClickEvent(self, event):
-        viewer = self.viewer()
-        if viewer:
+        if viewer := self.viewer():
             viewer.node_double_clicked.emit(self.id)
         super(BackdropNodeItem, self).mouseDoubleClickEvent(event)
 
@@ -180,7 +179,7 @@ class BackdropNodeItem(AbstractNodeItem):
                              self.backdrop_text)
 
         if self.selected and NODE_SEL_COLOR:
-            sel_color = [x for x in NODE_SEL_COLOR]
+            sel_color = list(NODE_SEL_COLOR)
             sel_color[-1] = 10
             painter.setBrush(QtGui.QColor(*sel_color))
             painter.setPen(QtCore.Qt.NoPen)
@@ -211,15 +210,14 @@ class BackdropNodeItem(AbstractNodeItem):
             rect = polygon.boundingRect()
             items = self.scene().items(rect, mode=mode[inc_intersects])
             for item in items:
-                if item == self or item == self._sizer:
+                if item in [self, self._sizer]:
                     continue
                 if isinstance(item, AbstractNodeItem):
                     nodes.append(item)
         return nodes
 
     def auto_resize(self, nodes=None):
-        nodes = nodes or self.get_nodes(True)
-        if nodes:
+        if nodes := nodes or self.get_nodes(True):
             padding = 40
             nodes_rect = self._combined_rect(nodes)
             self.xy_pos = [nodes_rect.x() - padding, nodes_rect.y() - padding]
@@ -238,8 +236,7 @@ class BackdropNodeItem(AbstractNodeItem):
             viewer (NodeGraphQt.widgets.viewer.NodeViewer): main viewer.
             pos (tuple): cursor pos.
         """
-        nodes = viewer.selected_nodes()
-        if nodes:
+        if nodes := viewer.selected_nodes():
             padding = 40
             scene = viewer.scene()
             group = scene.createItemGroup(nodes)

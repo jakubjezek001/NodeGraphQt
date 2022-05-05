@@ -20,12 +20,19 @@ def get_nodes_from_folder(folder_path):
             continue
 
         filename = i[:-3]
-        module_name = folder_name + "." + filename
+        module_name = f"{folder_name}.{filename}"
 
-        for name, obj in inspect.getmembers(importlib.import_module(module_name)):
-            if inspect.isclass(obj) and filename in str(obj):
-                if len(inspect.getmembers(obj)) > 0 and obj.__identifier__ != '__None':
-                    nodes.append(obj)
+        nodes.extend(
+            obj
+            for name, obj in inspect.getmembers(
+                importlib.import_module(module_name)
+            )
+            if inspect.isclass(obj)
+            and filename in str(obj)
+            and len(inspect.getmembers(obj)) > 0
+            and obj.__identifier__ != '__None'
+        )
+
     return nodes
 
 

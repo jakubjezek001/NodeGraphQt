@@ -37,8 +37,7 @@ class TickTimeNode(BaseNode):
 
     def tick(self):
         if not self.disabled():
-            current = int(self.get_property('out'))
-            current += 1
+            current = int(self.get_property('out')) + 1
             self.view.widgets['out'].value_changed.emit('out', str(current))
 
 

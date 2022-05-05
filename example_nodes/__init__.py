@@ -13,16 +13,19 @@ def detectNodesFromText(filepath):
 
     with open(filepath, "r") as source:
         tree = ast.parse(source.read())
-    
+
     for node in tree.body:
         if isinstance(node, ast.ClassDef):
             for base in node.bases:
                 if base.id in VALID_NODE_TYPE:
                     for indef in node.body:
                         if isinstance(indef, ast.Assign):
-                            for target in indef.targets:
-                                if target.id == '__identifier__':
-                                    froms.append(node.name)
+                            froms.extend(
+                                node.name
+                                for target in indef.targets
+                                if target.id == '__identifier__'
+                            )
+
     return froms
 
 
@@ -46,11 +49,9 @@ def getNodesRecursively(path=__file__):
 
                 try:
                     mod = __import__(module_name, globals(), locals(), froms, 0)
-                    for node in froms:
-                        Nodes.append(getattr(mod, node))
-
+                    Nodes.extend(getattr(mod, node) for node in froms)
                 except ImportError as e:
-                    print ('Error in importing class: %s' % (e))
+                    print(f'Error in importing class: {e}')
                     continue
 
     return Nodes

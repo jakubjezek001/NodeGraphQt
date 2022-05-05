@@ -17,8 +17,7 @@ class DataViewerNode(BaseNode):
             try:
                 from_node.run()
             except Exception as error:
-                print("%s no inputs connected: %s" %
-                      (from_node.name(), str(error)))
+                print(f"{from_node.name()} no inputs connected: {str(error)}")
                 self.set_property('data', None)
                 return
             value = from_node.get_property(source.name())

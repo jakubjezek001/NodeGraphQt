@@ -17,9 +17,9 @@ class PropertyChangedCmd(QtWidgets.QUndoCommand):
     def __init__(self, node, name, value):
         QtWidgets.QUndoCommand.__init__(self)
         if name == 'name':
-            self.setText('renamed "{}" to "{}"'.format(node.name(), value))
+            self.setText(f'renamed "{node.name()}" to "{value}"')
         else:
-            self.setText('property "{}:{}"'.format(node.name(), name))
+            self.setText(f'property "{node.name()}:{name}"')
         self.node = node
         self.name = name
         self.old_val = node.get_property(name)
@@ -37,11 +37,12 @@ class PropertyChangedCmd(QtWidgets.QUndoCommand):
         view = self.node.view
 
         # view widgets.
-        if hasattr(view, 'widgets') and name in view.widgets.keys():
-            # check if previous value is identical to current value,
-            # prevent signals from causing a infinite loop.
-            if view.widgets[name].value != value:
-                view.widgets[name].value = value
+        if (
+            hasattr(view, 'widgets')
+            and name in view.widgets.keys()
+            and view.widgets[name].value != value
+        ):
+            view.widgets[name].value = value
 
         # view properties.
         if name in view.properties.keys():

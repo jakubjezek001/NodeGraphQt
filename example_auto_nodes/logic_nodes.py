@@ -60,7 +60,7 @@ class BooleanNode(AutoNode):
         Create inputs based on math functions arguments.
         """
         self.func = self.logics[func]
-        if self.b.visible() and not 'b' in self.func:
+        if self.b.visible() and 'b' not in self.func:
             self.b.set_visible(False)
         elif not self.b.visible():
             self.b.set_visible(True)

@@ -81,11 +81,14 @@ class DataConvect(AutoNode):
         self.create_property("out", None)
         self.add_input("in data")
 
-        items = ["all to int"]
-        items.append("all to float")
-        items.append("all to string")
-        items.append("eval string")
-        items.append("all to list")
+        items = [
+            "all to int",
+            "all to float",
+            "all to string",
+            "eval string",
+            "all to list",
+        ]
+
         self.add_combo_menu('method', 'Method', items=items)
 
     def run(self):

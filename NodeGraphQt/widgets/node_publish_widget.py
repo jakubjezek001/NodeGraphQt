@@ -31,10 +31,10 @@ class NodePublishWidget(QtWidgets.QDialog):
             node.name().replace(' ', '_'))
         self.node_identifier = QtWidgets.QLineEdit('Custom')
 
-        path = os.getcwd() + '/example_auto_nodes/published_nodes'
+        path = f'{os.getcwd()}/example_auto_nodes/published_nodes'
         if not os.path.exists(path):
             path = os.getcwd()
-        path += '/' + self.node_class_name.text() + '.node'
+        path += f'/{self.node_class_name.text()}.node'
         path = path.replace('\\', '/')
 
         self.file_path_widget = PropFileSavePath()

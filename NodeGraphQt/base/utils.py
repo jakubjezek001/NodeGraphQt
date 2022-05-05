@@ -146,8 +146,7 @@ def _open_session(graph):
     """
     current = graph.current_session()
     viewer = graph.viewer()
-    file_path = viewer.load_dialog(current)
-    if file_path:
+    if file_path := viewer.load_dialog(current):
         graph.load_session(file_path)
 
 
@@ -160,8 +159,7 @@ def _import_session(graph):
     """
     current = graph.current_session()
     viewer = graph.viewer()
-    file_path = viewer.load_dialog(current)
-    if file_path:
+    if file_path := viewer.load_dialog(current):
         graph.import_session(file_path)
 
 
@@ -172,8 +170,7 @@ def _save_session(graph):
     Args:
         graph (NodeGraphQt.NodeGraph): node graph.
     """
-    current = graph.current_session()
-    if current:
+    if current := graph.current_session():
         graph.save_session(current)
         msg = 'Session layout saved:\n{}'.format(current)
         viewer = graph.viewer()
@@ -191,8 +188,7 @@ def _save_session_as(graph):
     """
     current = graph.current_session()
     viewer = graph.viewer()
-    file_path = viewer.save_dialog(current)
-    if file_path:
+    if file_path := viewer.save_dialog(current):
         graph.save_session(file_path)
 
 
@@ -259,14 +255,12 @@ def _fit_to_selection(graph):
 
 
 def _jump_in(graph):
-    nodes = graph.selected_nodes()
-    if nodes:
+    if nodes := graph.selected_nodes():
         graph.set_node_space(nodes[0])
 
 
 def _jump_out(graph):
-    node = graph.get_node_space()
-    if node:
+    if node := graph.get_node_space():
         if node.parent() is not None:
             graph.set_node_space(node.parent())
 
@@ -302,10 +296,7 @@ def _bg_grid_lines(graph):
 def __layout_graph(graph, down_stream=True):
     graph.begin_undo('Auto Layout')
     node_space = graph.get_node_space()
-    if node_space is not None:
-        nodes = node_space.children()
-    else:
-        nodes = graph.all_nodes()
+    nodes = node_space.children() if node_space is not None else graph.all_nodes()
     if not nodes:
         return
     node_views = [n.view for n in nodes]
@@ -380,10 +371,7 @@ def _has_input_node(node):
         bool.
     """
 
-    for p in node.input_ports():
-        if p.view.connected_pipes:
-            return True
-    return False
+    return any(p.view.connected_pipes for p in node.input_ports())
 
 
 def _has_output_node(node):
@@ -396,10 +384,7 @@ def _has_output_node(node):
         bool.
     """
 
-    for p in node.output_ports():
-        if p.view.connected_pipes:
-            return True
-    return False
+    return any(p.view.connected_pipes for p in node.output_ports())
 
 
 def _build_down_stream_graph(start_nodes):
@@ -631,10 +616,7 @@ def update_nodes_by_up(nodes):
 def _update_node_rank_down(node, nodes_rank):
     rank = nodes_rank[node] + 1
     for n in get_output_nodes(node, False):
-        if n in nodes_rank:
-            nodes_rank[n] = max(nodes_rank[n], rank)
-        else:
-            nodes_rank[n] = rank
+        nodes_rank[n] = max(nodes_rank[n], rank) if n in nodes_rank else rank
         _update_node_rank_down(n, nodes_rank)
 
 
@@ -659,10 +641,7 @@ def _compute_rank_down(start_nodes):
 def _update_node_rank_up(node, nodes_rank):
     rank = nodes_rank[node] + 1
     for n in get_input_nodes(node):
-        if n in nodes_rank:
-            nodes_rank[n] = max(nodes_rank[n], rank)
-        else:
-            nodes_rank[n] = rank
+        nodes_rank[n] = max(nodes_rank[n], rank) if n in nodes_rank else rank
         _update_node_rank_up(n, nodes_rank)
 
 
@@ -722,7 +701,7 @@ def auto_layout_up(start_nodes=None, all_nodes=None):
         node_height = 80
         for rank in reversed(range(len(rank_map))):
             nodes = rank_map[rank]
-            max_width = max([node.view.width for node in nodes])
+            max_width = max(node.view.width for node in nodes)
             current_x += max_width
             current_y = 0
             for idx, node in enumerate(nodes):
@@ -737,7 +716,7 @@ def auto_layout_up(start_nodes=None, all_nodes=None):
         node_width = 250
         for rank in reversed(range(len(rank_map))):
             nodes = rank_map[rank]
-            max_height = max([node.view.height for node in nodes])
+            max_height = max(node.view.height for node in nodes)
             current_y += max_height
             current_x = 0
             for idx, node in enumerate(nodes):
@@ -786,7 +765,7 @@ def auto_layout_down(start_nodes=None, all_nodes=None):
         node_height = 120
         for rank in range(len(rank_map)):
             nodes = rank_map[rank]
-            max_width = max([node.view.width for node in nodes])
+            max_width = max(node.view.width for node in nodes)
             current_x += max_width
             current_y = 0
             for idx, node in enumerate(nodes):
@@ -801,7 +780,7 @@ def auto_layout_down(start_nodes=None, all_nodes=None):
         node_width = 250
         for rank in range(len(rank_map)):
             nodes = rank_map[rank]
-            max_height = max([node.view.height for node in nodes])
+            max_height = max(node.view.height for node in nodes)
             current_y += max_height
             current_x = 0
             for idx, node in enumerate(nodes):
@@ -822,29 +801,30 @@ def minimize_node_ref_count(node):
     Args:
         node (NodeGraphQt.NodeObject): node.
     """
-    if node.graph is None or node.id not in node.graph.model.nodes:
-        if hasattr(node, 'deleted'):
-            del node
-            return
-        from .node import BaseNode
-        from .graph import SubGraph
-        node._parent = None
-        if isinstance(node, BaseNode):
-            try:
-                [wid.deleteLater() for wid in node.view._widgets.values()]
-            except:
-                pass
-            node.view._widgets.clear()
-            for port in node._inputs:
-                port.model.node = None
-            for port in node._outputs:
-                port.model.node = None
-
-            if isinstance(node, SubGraph):
-                node._children.clear()
-                node.sub_graph_input_nodes.clear()
-                node.sub_graph_output_nodes.clear()
-            # if isinstance(node, QtCore.QObject):
-            #     node.deleteLater()
-        node.deleted = True
+    if node.graph is not None and node.id in node.graph.model.nodes:
+        return
+    if hasattr(node, 'deleted'):
         del node
+        return
+    from .node import BaseNode
+    from .graph import SubGraph
+    node._parent = None
+    if isinstance(node, BaseNode):
+        try:
+            [wid.deleteLater() for wid in node.view._widgets.values()]
+        except:
+            pass
+        node.view._widgets.clear()
+        for port in node._inputs:
+            port.model.node = None
+        for port in node._outputs:
+            port.model.node = None
+
+        if isinstance(node, SubGraph):
+            node._children.clear()
+            node.sub_graph_input_nodes.clear()
+            node.sub_graph_output_nodes.clear()
+        # if isinstance(node, QtCore.QObject):
+        #     node.deleteLater()
+    node.deleted = True
+    del node

@@ -64,8 +64,7 @@ class MathFunctionsNode(BaseNode):
                 continue
             from_ports = to_port.connected_ports()
             if not from_ports:
-                raise Exception('Port %s not connected!' % to_port.name(),
-                                to_port)
+                raise Exception(f'Port {to_port.name()} not connected!', to_port)
 
             for from_port in from_ports:
                 from_port.node().run()
@@ -78,9 +77,9 @@ class MathFunctionsNode(BaseNode):
 
             self.set_property('output', data)
         except KeyError as error:
-            print("An input is missing! %s" % str(error))
+            print(f"An input is missing! {str(error)}")
         except TypeError as error:
-            print("Error evaluating function: %s" % str(error))
+            print(f"Error evaluating function: {str(error)}")
 
     def on_input_connected(self, to_port, from_port):
         """Override node callback method."""

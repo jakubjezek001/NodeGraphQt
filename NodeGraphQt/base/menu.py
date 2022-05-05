@@ -29,8 +29,7 @@ class NodeGraphMenu(object):
         self._qmenu = qmenu
 
     def __repr__(self):
-        return '<{}("{}") object at {}>'.format(
-            self.__class__.__name__, self.name(), hex(id(self)))
+        return f'<{self.__class__.__name__}("{self.name()}") object at {hex(id(self))}>'
 
     @property
     def qmenu(self):
@@ -61,8 +60,7 @@ class NodeGraphMenu(object):
         Returns:
             NodeGraphQt.NodeGraphMenu: menu item.
         """
-        menu = self.qmenu.get_menu(name)
-        if menu:
+        if menu := self.qmenu.get_menu(name):
             return NodeGraphMenu(self._graph, menu)
 
     def get_command(self, name):
@@ -89,11 +87,10 @@ class NodeGraphMenu(object):
         def get_actions(menu):
             actions = []
             for action in menu.actions():
-                if not action.menu():
-                    if not action.isSeparator():
-                        actions.append(action)
-                else:
+                if action.menu():
                     actions += get_actions(action.menu())
+                elif not action.isSeparator():
+                    actions.append(action)
             return actions
         child_actions = get_actions(self.qmenu)
         return [NodeGraphCommand(self._graph, a) for a in child_actions]
@@ -220,8 +217,7 @@ class NodeGraphCommand(object):
         self._qaction = qaction
 
     def __repr__(self):
-        return '<{}("{}") object at {}>'.format(
-            self.__class__.__name__, self.name(), hex(id(self)))
+        return f'<{self.__class__.__name__}("{self.name()}") object at {hex(id(self))}>'
 
     @property
     def qaction(self):

@@ -37,12 +37,12 @@ class NodeTreeWidget(QtWidgets.QTreeWidget):
         self._set_node_factory(node_graph.node_factory)
 
     def __repr__(self):
-        return '<{} object at {}>'.format(self.__class__.__name__, hex(id(self)))
+        return f'<{self.__class__.__name__} object at {hex(id(self))}>'
 
     def mimeData(self, items):
         node_ids = ','.join(i.toolTip(0) for i in items)
         mime_data = super(NodeTreeWidget, self).mimeData(items)
-        mime_data.setText('<${}>:{}'.format(DRAG_DROP_ID, node_ids))
+        mime_data.setText(f'<${DRAG_DROP_ID}>:{node_ids}')
         return mime_data
 
     def _build_tree(self):
@@ -62,7 +62,7 @@ class NodeTreeWidget(QtWidgets.QTreeWidget):
             if category in self._custom_labels.keys():
                 label = self._custom_labels[category]
             else:
-                label = '- {}'.format(category)
+                label = f'- {category}'
             cat_item = BaseNodeTreeItem(self, [label], type=TYPE_CATEGORY)
             cat_item.setFirstColumnSpanned(True)
             cat_item.setFlags(QtCore.Qt.ItemIsEnabled)

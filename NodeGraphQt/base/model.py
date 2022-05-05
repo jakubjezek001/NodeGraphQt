@@ -24,8 +24,7 @@ class PortModel(object):
         self.data_type = 'NoneType'
 
     def __repr__(self):
-        return '<{}(\'{}\') object at {}>'.format(
-            self.__class__.__name__, self.name, hex(id(self)))
+        return f"<{self.__class__.__name__}('{self.name}') object at {hex(id(self))}>"
 
     @property
     def to_dict(self):
@@ -98,8 +97,7 @@ class NodeModel(object):
         }
 
     def __repr__(self):
-        return '<{}(\'{}\') object at {}>'.format(
-            self.__class__.__name__, self.name, self.id)
+        return f"<{self.__class__.__name__}('{self.name}') object at {self.id}>"
 
     def add_property(self, name, value, items=None, range=None,
                      widget_type=NODE_PROP, tab='Properties',
@@ -120,11 +118,9 @@ class NodeModel(object):
         tab = tab or 'Properties'
 
         if name in self.properties.keys():
-            raise NodePropertyError(
-                '"{}" reserved for default property.'.format(name))
+            raise NodePropertyError(f'"{name}" reserved for default property.')
         if name in self._custom_prop.keys():
-            raise NodePropertyError(
-                '"{}" property already exists.'.format(name))
+            raise NodePropertyError(f'"{name}" property already exists.')
 
         self._custom_prop[name] = value
 
@@ -177,8 +173,7 @@ class NodeModel(object):
     def get_tab_name(self, name):
         model = self._graph_model
         if model is None:
-            attrs = self._TEMP_property_attrs.get(name)
-            if attrs:
+            if attrs := self._TEMP_property_attrs.get(name):
                 return attrs[name].get('tab')
             return
         return model.get_node_common_properties(self.type_)[name]['tab']
@@ -253,8 +248,7 @@ class NodeModel(object):
                     'display_name': model.display_name,
                     'data_type': model.data_type
                 })
-            connected_ports = model.to_dict['connected_ports']
-            if connected_ports:
+            if connected_ports := model.to_dict['connected_ports']:
                 inputs[name] = connected_ports
         for name, model in node_dict.pop('outputs').items():
             if self.dynamic_port:
@@ -264,8 +258,7 @@ class NodeModel(object):
                     'display_name': model.display_name,
                     'data_type': model.data_type
                 })
-            connected_ports = model.to_dict['connected_ports']
-            if connected_ports:
+            if connected_ports := model.to_dict['connected_ports']:
                 outputs[name] = connected_ports
         if inputs:
             node_dict['inputs'] = inputs
@@ -276,9 +269,7 @@ class NodeModel(object):
             node_dict['input_ports'] = input_ports
             node_dict['output_ports'] = output_ports
 
-        custom_props = node_dict.pop('_custom_prop', {})
-
-        if custom_props:
+        if custom_props := node_dict.pop('_custom_prop', {}):
             # exclude the data which can not be serialized (like numpy array)
             to_remove = []
             types = [float, str, int, list, dict, bool, None, complex, tuple]

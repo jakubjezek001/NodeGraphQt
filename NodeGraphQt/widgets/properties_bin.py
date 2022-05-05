@@ -111,7 +111,7 @@ class PropertiesBinWidget(QtWidgets.QWidget):
         node_graph.property_changed.connect(self.__on_graph_property_changed)
 
     def __repr__(self):
-        return '<{} object at {}>'.format(self.__class__.__name__, hex(id(self)))
+        return f'<{self.__class__.__name__} object at {hex(id(self))}>'
 
     def __on_prop_close(self, node_id):
         items = self._prop_list.findItems(node_id, QtCore.Qt.MatchExactly)
@@ -191,9 +191,7 @@ class PropertiesBinWidget(QtWidgets.QWidget):
         if self.limit() == 0 or self._lock:
             return
 
-        itm_find = self._prop_list.findItems(node.id, QtCore.Qt.MatchExactly)
-
-        if itm_find:
+        if itm_find := self._prop_list.findItems(node.id, QtCore.Qt.MatchExactly):
             if itm_find[0].row() == 0:
                 try:
                     itm_find[0].setEnabled(node.graph.editable)
@@ -254,8 +252,7 @@ class PropertiesBinWidget(QtWidgets.QWidget):
             NodePropWidget: node property widget.
         """
         node_id = node if isinstance(node, str) else node.id
-        itm_find = self._prop_list.findItems(node_id, QtCore.Qt.MatchExactly)
-        if itm_find:
+        if itm_find := self._prop_list.findItems(node_id, QtCore.Qt.MatchExactly):
             item = itm_find[0]
             return self._prop_list.cellWidget(item.row(), 0)
 

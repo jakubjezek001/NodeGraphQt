@@ -106,8 +106,7 @@ class numpyModuleNode(ModuleNode):
         self.set_icon("example_auto_nodes/icons/numpy.png")
 
     def is_function(self, obj):
-        result = super(numpyModuleNode, self).is_function(obj)
-        if result:
+        if result := super(numpyModuleNode, self).is_function(obj):
             return True
         elif type(obj).__name__ == "ufunc":
             return True
@@ -139,7 +138,7 @@ class numpyModuleNode(ModuleNode):
                     args = self.get_numpy_args(self.func)
                 except:
                     if type(self.func).__name__ == "ufunc":
-                        args = ["input" + str(i + 1) for i in range(self.func.nin)]
+                        args = [f"input{str(i + 1)}" for i in range(self.func.nin)]
 
         self.process_args(args)
 
@@ -215,4 +214,3 @@ class TupleFunctionsNode(ModuleNode):
 if __name__ == "__main__":
     s = "[2,2]"
     print(numpy.zeros(eval(s)))
-    pass
