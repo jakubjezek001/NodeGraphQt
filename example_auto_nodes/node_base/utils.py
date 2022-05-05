@@ -47,9 +47,9 @@ class CryptoColors(object):
             return CryptoColors.colors[text]
         h = hashlib.sha256(text.encode('utf-8')).hexdigest()
         d = int('0xFFFFFFFFFFFFFFFF', 0)
-        r = int(Min + (int("0x" + h[:16], 0) / d) * (Max - Min))
-        g = int(Min + (int("0x" + h[16:32], 0) / d) * (Max - Min))
-        b = int(Min + (int("0x" + h[32:48], 0) / d) * (Max - Min))
+        r = int(Min + int(f"0x{h[:16]}", 0) / d * (Max - Min))
+        g = int(Min + int(f"0x{h[16:32]}", 0) / d * (Max - Min))
+        b = int(Min + int(f"0x{h[32:48]}", 0) / d * (Max - Min))
         # a = int(Min + (int("0x" + h[48:], 0) / d) * (Max - Min))
         CryptoColors.colors[text] = (r, g, b, 255)
         return CryptoColors.colors[text]

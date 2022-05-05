@@ -117,7 +117,7 @@ class TextFileInputNode(AutoNode):
             except Exception as e:
                 self.error(e)
         else:
-            self.error('No exist %s' % path)
+            self.error(f'No exist {path}')
             self.set_property('file content', '')
 
 

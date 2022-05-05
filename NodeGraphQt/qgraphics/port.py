@@ -42,10 +42,10 @@ class PortItem(QtWidgets.QGraphicsItem):
         self.setCacheMode(ITEM_CACHE_MODE)
 
     def __str__(self):
-        return '{}.PortItem("{}")'.format(self.__module__, self.name)
+        return f'{self.__module__}.PortItem("{self.name}")'
 
     def __repr__(self):
-        return '{}.PortItem("{}")'.format(self.__module__, self.name)
+        return f'{self.__module__}.PortItem("{self.name}")'
 
     def boundingRect(self):
         return QtCore.QRectF(0.0, 0.0, self._width + PORT_FALLOFF, self._height)
@@ -164,11 +164,11 @@ class PortItem(QtWidgets.QGraphicsItem):
 
     @property
     def connected_ports(self):
-        ports = []
         port_types = {IN_PORT: 'output_port', OUT_PORT: 'input_port'}
-        for pipe in self.connected_pipes:
-            ports.append(getattr(pipe, port_types[self.port_type]))
-        return ports
+        return [
+            getattr(pipe, port_types[self.port_type])
+            for pipe in self.connected_pipes
+        ]
 
     @property
     def hovered(self):
@@ -231,7 +231,7 @@ class PortItem(QtWidgets.QGraphicsItem):
     def locked(self, value=False):
         self._locked = value
         conn_type = 'multi' if self.multi_connection else 'single'
-        tooltip = '{}: ({})'.format(self.name, conn_type)
+        tooltip = f'{self.name}: ({conn_type})'
         if value:
             tooltip += ' (L)'
         self.setToolTip(tooltip)
@@ -243,7 +243,7 @@ class PortItem(QtWidgets.QGraphicsItem):
     @multi_connection.setter
     def multi_connection(self, mode=False):
         conn_type = 'multi' if mode else 'single'
-        self.setToolTip('{}: ({})'.format(self.name, conn_type))
+        self.setToolTip(f'{self.name}: ({conn_type})')
         self._multi_connection = mode
 
     @property

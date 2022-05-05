@@ -67,11 +67,10 @@ class NodeObject(object):
         self._parent = None
 
     def __repr__(self):
-        return '<{}("{}") object at {}>'.format(
-            self.__class__.__name__, self.NODE_NAME, hex(id(self)))
+        return f'<{self.__class__.__name__}("{self.NODE_NAME}") object at {hex(id(self))}>'
 
     @classproperty
-    def type_(cls):
+    def type_(self):
         """
         Node type identifier followed by the class name.
         `eg.` ``"com.chantacticvfx.NodeObject"``
@@ -79,7 +78,7 @@ class NodeObject(object):
         Returns:
             str: node type.
         """
-        return cls.__identifier__ + '.' + cls.__name__
+        return f'{self.__identifier__}.{self.__name__}'
 
     @property
     def id(self):
@@ -461,8 +460,8 @@ class NodeObject(object):
             str: current node path.
         """
         if self._parent is None:
-            return "/" + self.name()
-        return self._parent.path() + "/" + self.name()
+            return f"/{self.name()}"
+        return f"{self._parent.path()}/{self.name()}"
 
     def delete(self):
         """
@@ -544,14 +543,13 @@ class BaseNode(NodeObject):
             force (bool): force redraw if not visible.
         """
         if force:
-            if not self.model.visible:
-                self._has_draw = False
+            if self.model.visible:
+                self.view.draw_node()
             else:
-                self.view.draw_node()
-        else:
-            if not self._has_draw:
-                self.view.draw_node()
-                self._has_draw = True
+                self._has_draw = False
+        elif not self._has_draw:
+            self.view.draw_node()
+            self._has_draw = True
 
     def hide(self):
         """
@@ -817,8 +815,7 @@ class BaseNode(NodeObject):
             NodeGraphQt.Port: the created port object.
         """
         if name in self.inputs().keys():
-            raise PortRegistrationError(
-                'port name "{}" already registered.'.format(name))
+            raise PortRegistrationError(f'port name "{name}" already registered.')
 
         port_args = [name, multi_input, display_name, locked]
         if painter_func and callable(painter_func):
@@ -860,8 +857,7 @@ class BaseNode(NodeObject):
             NodeGraphQt.Port: the created port object.
         """
         if name in self.outputs().keys():
-            raise PortRegistrationError(
-                'port name "{}" already registered.'.format(name))
+            raise PortRegistrationError(f'port name "{name}" already registered.')
 
         port_args = [name, multi_output, display_name, locked]
         if painter_func and callable(painter_func):
@@ -894,7 +890,7 @@ class BaseNode(NodeObject):
             return
         old_value = self.get_property(name)
         self.set_property(name, items)
-        _name = '_' + name + "_"
+        _name = f'_{name}_'
         if not self.has_property(_name):
             self.create_property(_name, items)
         else:
@@ -1107,10 +1103,10 @@ class BaseNode(NodeObject):
         Returns:
             dict: {<input_port>: <node_list>}
         """
-        nodes = {}
-        for p in self.input_ports():
-            nodes[p] = [cp.node() for cp in p.connected_ports()]
-        return nodes
+        return {
+            p: [cp.node() for cp in p.connected_ports()]
+            for p in self.input_ports()
+        }
 
     def connected_output_nodes(self):
         """
@@ -1119,10 +1115,10 @@ class BaseNode(NodeObject):
         Returns:
             dict: {<output_port>: <node_list>}
         """
-        nodes = {}
-        for p in self.output_ports():
-            nodes[p] = [cp.node() for cp in p.connected_ports()]
-        return nodes
+        return {
+            p: [cp.node() for cp in p.connected_ports()]
+            for p in self.output_ports()
+        }
 
     def on_input_connected(self, in_port, out_port):
         """

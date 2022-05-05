@@ -1215,12 +1215,12 @@ def _apply_site_config():
 
 
 def _new_module(name):
-    return types.ModuleType(__name__ + "." + name)
+    return types.ModuleType(f"{__name__}.{name}")
 
 
 def _import_sub_module(module, name):
     """import_sub_module will mimic the function of importlib.import_module"""
-    module = __import__(module.__name__ + "." + name)
+    module = __import__(f"{module.__name__}.{name}")
     for level in name.split("."):
         module = getattr(module, level)
     return module
@@ -1243,7 +1243,7 @@ def _setup(module, extras):
             except ImportError:
                 continue
 
-        setattr(Qt, "_" + name, submodule)
+        setattr(Qt, f"_{name}", submodule)
 
         if name not in extras:
             # Store reference to original binding,
@@ -1281,7 +1281,7 @@ def _reassign_misplaced_members(binding):
         # Get the member we want to store in the namesapce.
         if not dst_value:
             try:
-                _part = getattr(Qt, "_" + src_module)
+                _part = getattr(Qt, f"_{src_module}")
                 while src_member:
                     member = src_member.pop(0)
                     _part = getattr(_part, member)
@@ -1310,10 +1310,10 @@ def _reassign_misplaced_members(binding):
             setattr(Qt, dst_module, _new_module(dst_module))
             src_object = getattr(Qt, dst_module)
             # Enable direct import of the new module
-            sys.modules[__name__ + "." + dst_module] = src_object
+            sys.modules[f"{__name__}.{dst_module}"] = src_object
 
         if not dst_value:
-            dst_value = getattr(Qt, "_" + src_module)
+            dst_value = getattr(Qt, f"_{src_module}")
             if src_member:
                 dst_value = getattr(dst_value, src_member)
 
@@ -1356,9 +1356,9 @@ def _build_compatibility_members(binding, decorators=None):
         for target, binding in bindings.items():
             namespaces = binding.split('.')
             try:
-                src_object = getattr(Qt, "_" + namespaces[0])
+                src_object = getattr(Qt, f"_{namespaces[0]}")
             except AttributeError as e:
-                _log("QtCompat: AttributeError: %s" % e)
+                _log(f"QtCompat: AttributeError: {e}")
                 # Skip reassignment of non-existing members.
                 # This can happen if a request was made to
                 # rename a member that didn't exist, for example
@@ -1637,7 +1637,7 @@ def _none():
 
     for submodule in _common_members.keys():
         setattr(Qt, submodule, Mock())
-        setattr(Qt, "_" + submodule, Mock())
+        setattr(Qt, f"_{submodule}", Mock())
 
 
 def _log(text):
@@ -1733,9 +1733,7 @@ def _cli(args):
 def _install():
     # Default order (customise order and content via QT_PREFERRED_BINDING)
     default_order = ("PySide2", "PyQt5", "PySide", "PyQt4")
-    preferred_order = list(
-        b for b in QT_PREFERRED_BINDING.split(os.pathsep) if b
-    )
+    preferred_order = [b for b in QT_PREFERRED_BINDING.split(os.pathsep) if b]
 
     order = preferred_order or default_order
 
@@ -1754,7 +1752,7 @@ def _install():
 
     found_binding = False
     for name in order:
-        _log("Trying %s" % name)
+        _log(f"Trying {name}")
 
         try:
             available[name]()
@@ -1762,7 +1760,7 @@ def _install():
             break
 
         except ImportError as e:
-            _log("ImportError: %s" % e)
+            _log(f"ImportError: {e}")
 
         except KeyError:
             _log("ImportError: Preferred binding '%s' not found." % name)
@@ -1774,7 +1772,7 @@ def _install():
     # Install individual members
     for name, members in _common_members.items():
         try:
-            their_submodule = getattr(Qt, "_%s" % name)
+            their_submodule = getattr(Qt, f"_{name}")
         except AttributeError:
             continue
 
@@ -1785,7 +1783,7 @@ def _install():
 
         # Enable direct import of submodule,
         # e.g. import Qt.QtCore
-        sys.modules[__name__ + "." + name] = our_submodule
+        sys.modules[f"{__name__}.{name}"] = our_submodule
 
         for member in members:
             # Accept that a submodule may miss certain members.

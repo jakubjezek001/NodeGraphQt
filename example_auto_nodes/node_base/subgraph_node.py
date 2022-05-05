@@ -59,8 +59,7 @@ class SubGraphNode(AutoNode, SubGraph):
 
         self.hide()
         [n.show() for n in self.children()]
-        rect = self.get_property('graph_rect')
-        if rect:
+        if rect := self.get_property('graph_rect'):
             self.graph.set_graph_rect(rect)
 
     def exit(self):
@@ -98,13 +97,17 @@ class SubGraphNode(AutoNode, SubGraph):
         if self.has_property('root'):
             return
 
-        if isinstance(node, SubGraphInputNode):
-            if node not in self.sub_graph_input_nodes:
-                self.sub_graph_input_nodes.append(node)
+        if (
+            isinstance(node, SubGraphInputNode)
+            and node not in self.sub_graph_input_nodes
+        ):
+            self.sub_graph_input_nodes.append(node)
 
-        if isinstance(node, SubGraphOutputNode):
-            if node not in self.sub_graph_output_nodes:
-                self.sub_graph_output_nodes.append(node)
+        if (
+            isinstance(node, SubGraphOutputNode)
+            and node not in self.sub_graph_output_nodes
+        ):
+            self.sub_graph_output_nodes.append(node)
 
     def remove_child(self, node):
         """
@@ -119,12 +122,16 @@ class SubGraphNode(AutoNode, SubGraph):
 
         if self.has_property('root'):
             return
-        if isinstance(node, SubGraphInputNode):
-            if node in self.sub_graph_input_nodes:
-                self.sub_graph_input_nodes.remove(node)
-        if isinstance(node, SubGraphOutputNode):
-            if node in self.sub_graph_output_nodes:
-                self.sub_graph_output_nodes.remove(node)
+        if (
+            isinstance(node, SubGraphInputNode)
+            and node in self.sub_graph_input_nodes
+        ):
+            self.sub_graph_input_nodes.remove(node)
+        if (
+            isinstance(node, SubGraphOutputNode)
+            and node in self.sub_graph_output_nodes
+        ):
+            self.sub_graph_output_nodes.remove(node)
 
     def get_data(self, port):
         if self.disabled():
@@ -155,9 +162,12 @@ class SubGraphNode(AutoNode, SubGraph):
         if self._marked_ports:
             for port in self._marked_ports:
                 index = self.input_ports().index(port)
-                for node in self.sub_graph_input_nodes:
-                    if node.get_property('input index') == index:
-                        start_nodes.append(node)
+                start_nodes.extend(
+                    node
+                    for node in self.sub_graph_input_nodes
+                    if node.get_property('input index') == index
+                )
+
             self._marked_ports = []
         else:
             start_nodes = self.sub_graph_input_nodes
@@ -169,7 +179,7 @@ class SubGraphNode(AutoNode, SubGraph):
                 continue
             node.cook()
             if node.has_error:
-                self.error("/"+node.view.toolTip())
+                self.error(f"/{node.view.toolTip()}")
                 break
 
     def delete(self):
@@ -238,16 +248,22 @@ class SubGraphNode(AutoNode, SubGraph):
             if isinstance(node, BackdropNode):
                 continue
             for port in node.input_ports():
-                for pipe in port.view.connected_pipes:
-                    if pipe.output_port.isVisible():
-                        in_connect.append((pipe.output_port, pipe.input_port))
+                in_connect.extend(
+                    (pipe.output_port, pipe.input_port)
+                    for pipe in port.view.connected_pipes
+                    if pipe.output_port.isVisible()
+                )
+
             for port in node.output_ports():
-                for pipe in port.view.connected_pipes:
-                    if pipe.input_port.isVisible():
-                        out_connect.append((pipe.output_port, pipe.input_port))
+                out_connect.extend(
+                    (pipe.output_port, pipe.input_port)
+                    for pipe in port.view.connected_pipes
+                    if pipe.input_port.isVisible()
+                )
+
         in_map = {}
         for idx, ports in enumerate(in_connect):
-            if ports[0] in in_map.keys():
+            if ports[0] in in_map:
                 in_map[ports[0]].append([ports[1], in_map[ports[0]][0][1]])
             else:
                 self.create_input_node()
@@ -259,12 +275,19 @@ class SubGraphNode(AutoNode, SubGraph):
         for port0, data in in_map.items():
             for port_data in data:
                 idx = port_data[1]
-                connected.append((port0, self.input_ports()[idx].view))
-                connected.append((self.sub_graph_input_nodes[idx].output_ports()[0].view, port_data[0]))
+                connected.extend(
+                    (
+                        (port0, self.input_ports()[idx].view),
+                        (
+                            self.sub_graph_input_nodes[idx].output_ports()[0].view,
+                            port_data[0],
+                        ),
+                    )
+                )
 
         out_map = {}
         for idx, ports in enumerate(out_connect):
-            if ports[0] in out_map.keys():
+            if ports[0] in out_map:
                 out_map[ports[0]].append([ports[1], out_map[ports[0]][0][1]])
             else:
                 self.create_output_node()
@@ -276,12 +299,21 @@ class SubGraphNode(AutoNode, SubGraph):
         for port0, data in out_map.items():
             for port_data in data:
                 idx = port_data[1]
-                connected.append((port0, self.sub_graph_output_nodes[idx].input_ports()[0].view))
-                connected.append((self.output_ports()[idx].view, port_data[0]))
+                connected.extend(
+                    (
+                        (
+                            port0,
+                            self.sub_graph_output_nodes[idx].input_ports()[0].view,
+                        ),
+                        (self.output_ports()[idx].view, port_data[0]),
+                    )
+                )
 
-        disconnected = in_connect + out_connect
-
-        if disconnected or connected:
+        if (
+            (disconnected := in_connect + out_connect)
+            or not (disconnected := in_connect + out_connect)
+            and connected
+        ):
             self.graph._on_connection_changed(disconnected, connected)
 
         if len(self.input_ports()) == 0:
@@ -304,8 +336,8 @@ class SubGraphNode(AutoNode, SubGraph):
 
         if input_count != current_input_count:
             if input_count > current_input_count:
-                for i in range(input_count - current_input_count):
-                    self.add_input('input' + str(len(self.input_ports())))
+                for _ in range(input_count - current_input_count):
+                    self.add_input(f'input{len(self.input_ports())}')
             else:
                 for i in range(current_input_count - input_count):
                     self.delete_input(current_input_count - i - 1)
@@ -313,8 +345,8 @@ class SubGraphNode(AutoNode, SubGraph):
 
         if output_count != current_output_count:
             if output_count > current_output_count:
-                for i in range(output_count - current_output_count):
-                    self.add_output('output' + str(len(self.output_ports())))
+                for _ in range(output_count - current_output_count):
+                    self.add_output(f'output{len(self.output_ports())}')
             else:
                 for i in range(current_output_count - output_count):
                     self.delete_output(current_output_count - i - 1)
@@ -367,15 +399,10 @@ class SubGraphInputNode(AutoNode):
 
     def get_data(self, port):
         parent = self.parent()
-        if parent is not None:
-            from_port = self.get_parent_port(parent)
-            if from_port:
-                return from_port.node().get_data(from_port)
-            else:
-                # can not find port
-                return self.defaultValue
+        if parent is not None and (from_port := self.get_parent_port(parent)):
+            return from_port.node().get_data(from_port)
         else:
-            # can not find parent
+            # can not find port
             return self.defaultValue
 
     def get_parent_port(self, parent=None):
@@ -386,11 +413,7 @@ class SubGraphInputNode(AutoNode):
             self.error('input index out of range !!!')
             return None
         to_port = parent.input(int(index))
-        from_ports = to_port.connected_ports()
-        if from_ports:
-            return from_ports[0]
-        else:
-            return None
+        return from_ports[0] if (from_ports := to_port.connected_ports()) else None
 
 
 class SubGraphOutputNode(AutoNode):

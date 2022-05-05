@@ -12,7 +12,7 @@ def _get_functions_from_module(module, function_dict, max_depth=1, module_name=N
         if func in ["sys", "os"]:
             continue
 
-        new_module_name = module_name + "." + func
+        new_module_name = f"{module_name}.{func}"
 
         obj = getattr(module, func)
         if inspect.ismodule(obj):
@@ -31,10 +31,7 @@ def get_functions_from_module(module, max_depth=1):
 
 def get_functions_from_type(object_type):
     type_functions = [func for func in dir(object_type) if not func.startswith('_')]
-    function_dict = {}
-    for func in type_functions:
-        function_dict[func] = getattr(object_type, func)
-    return function_dict
+    return {func: getattr(object_type, func) for func in type_functions}
 
 
 class ModuleNode(AutoNode):
@@ -118,12 +115,9 @@ class ModuleNode(AutoNode):
 
         try:
             # Execute function with arguments.
-            if self.is_function(self.func):
-                data = self.func(*args)
-            else:
-                data = self.func
+            data = self.func(*args) if self.is_function(self.func) else self.func
             if data is None:
                 data = args[0]
             self.set_property('output', data)
         except Exception as error:
-            self.error("Error : %s" % str(error))
+            self.error(f"Error : {str(error)}")

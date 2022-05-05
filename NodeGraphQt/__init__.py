@@ -73,13 +73,16 @@ example code:
         app.exec_()
 """
 
+
 try:
     from Qt import QtWidgets, QtGui, QtCore, QtCompat, QtOpenGL
 except ImportError as ie:
     from .vendor.Qt import __version__ as qtpy_ver
     from .vendor.Qt import QtWidgets, QtGui, QtCore, QtCompat ,QtOpenGL
-    print('NodeGraphQt: Can\'t import "Qt.py" module falling back on '
-          '"NodeGraphQt.vendor.Qt ({})"'.format(qtpy_ver))
+    print(
+        f"""NodeGraphQt: Can't import "Qt.py" module falling back on "NodeGraphQt.vendor.Qt ({qtpy_ver})\""""
+    )
+
 
 from .base.graph import NodeGraph, SubGraph
 from .base.menu import NodesMenu, NodeGraphMenu, NodeGraphCommand

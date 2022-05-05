@@ -47,19 +47,19 @@ class Pipe(QtWidgets.QGraphicsPathItem):
     def __repr__(self):
         in_name = self._input_port.name if self._input_port else ''
         out_name = self._output_port.name if self._output_port else ''
-        return '{}.Pipe(\'{}\', \'{}\')'.format(
-            self.__module__, in_name, out_name)
+        return f"{self.__module__}.Pipe('{in_name}', '{out_name}')"
 
     def hoverEnterEvent(self, event):
         self.activate()
 
     def hoverLeaveEvent(self, event):
         self.reset()
-        if self.input_port and self.output_port:
-            if self.input_port.node.selected:
-                self.highlight()
-            elif self.output_port.node.selected:
-                self.highlight()
+        if (
+            self.input_port
+            and self.output_port
+            and (self.input_port.node.selected or self.output_port.node.selected)
+        ):
+            self.highlight()
         if self.isSelected():
             self.highlight()
 
@@ -78,10 +78,7 @@ class Pipe(QtWidgets.QGraphicsPathItem):
         pen_width = PIPE_WIDTH
         if self._active:
             color = QtGui.QColor(*PIPE_ACTIVE_COLOR)
-            if pen_style == QtCore.Qt.DashDotDotLine:
-                pen_width += 1
-            else:
-                pen_width += 0.35
+            pen_width += 1 if pen_style == QtCore.Qt.DashDotDotLine else 0.35
         elif self._highlight:
             color = QtGui.QColor(*PIPE_HIGHLIGHT_COLOR)
             pen_style = PIPE_STYLES.get(PIPE_STYLE_DEFAULT)
@@ -280,10 +277,9 @@ class Pipe(QtWidgets.QGraphicsPathItem):
         input_dist = self.calc_distance(inport_pos, pos)
         output_dist = self.calc_distance(outport_pos, pos)
         if input_dist < output_dist:
-            port = self.output_port if reverse else self.input_port
+            return self.output_port if reverse else self.input_port
         else:
-            port = self.input_port if reverse else self.output_port
-        return port
+            return self.input_port if reverse else self.output_port
 
     def viewer_pipe_layout(self):
         if self.scene():
@@ -345,10 +341,7 @@ class Pipe(QtWidgets.QGraphicsPathItem):
 
     @input_port.setter
     def input_port(self, port):
-        if isinstance(port, PortItem) or not port:
-            self._input_port = port
-        else:
-            self._input_port = None
+        self._input_port = port if isinstance(port, PortItem) or not port else None
 
     @property
     def output_port(self):
@@ -356,10 +349,7 @@ class Pipe(QtWidgets.QGraphicsPathItem):
 
     @output_port.setter
     def output_port(self, port):
-        if isinstance(port, PortItem) or not port:
-            self._output_port = port
-        else:
-            self._output_port = None
+        self._output_port = port if isinstance(port, PortItem) or not port else None
 
     @property
     def color(self):
@@ -461,9 +451,7 @@ class LivePipe(Pipe):
         degrees = math.degrees(radians) + 90
         transform.rotate(degrees)
 
-        scale = 1.0
-        if dist < 20.0:
-            scale = dist / 20.0
+        scale = dist / 20.0 if dist < 20.0 else 1.0
         transform.scale(scale, scale)
         painter.drawPolygon(transform.map(self._arrow))
         painter.restore()

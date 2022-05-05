@@ -20,11 +20,7 @@ class IfNode(BaseNode):
     def run(self):
         for port in self.condition.connected_ports():
             port.node().run()
-            if port.node().get_property(port.name()):
-                result = self._then
-            else:
-                result = self._else
-
+            result = self._then if port.node().get_property(port.name()) else self._else
         for port in result.connected_ports():
             port.node().run()
             self.set_property('out', port.node().get_property(port.name()))
@@ -76,7 +72,7 @@ class BooleanNode(BaseNode):
         Create inputs based on math functions arguments.
         """
         self.func = self.logics[func]
-        if self.b.visible() and not 'b' in self.func:
+        if self.b.visible() and 'b' not in self.func:
             self.b.set_visible(False)
         elif not self.b.visible():
             self.b.set_visible(True)

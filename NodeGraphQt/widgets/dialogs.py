@@ -23,8 +23,7 @@ class FileDialog(object):
             file_dir = current_dir
         file_dlg = QtWidgets.QFileDialog.getSaveFileName(
             parent, title, file_dir, ext_filter)
-        file = file_dlg[0] or None
-        if file:
+        if file := file_dlg[0] or None:
             set_dir(file)
         return file_dlg
 
@@ -37,8 +36,7 @@ class FileDialog(object):
         file_dlg = QtWidgets.QFileDialog.getOpenFileName(
             parent, title, file_dir, ext_filter)
 
-        file = file_dlg[0] or None
-        if file:
+        if file := file_dlg[0] or None:
             set_dir(file)
 
         return file_dlg
@@ -65,4 +63,4 @@ class BaseDialog(object):
             QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
         )
         dlg.exec_()
-        return bool(dlg == QtWidgets.QMessageBox.Yes)
+        return dlg == QtWidgets.QMessageBox.Yes

@@ -65,7 +65,7 @@ class NodeBaseWidget(QtWidgets.QGraphicsProxyWidget):
 
     def setToolTip(self, tooltip):
         tooltip = tooltip.replace('\n', '<br/>')
-        tooltip = '<b>{}</b><br/>{}'.format(self.name, tooltip)
+        tooltip = f'<b>{self.name}</b><br/>{tooltip}'
         super(NodeBaseWidget, self).setToolTip(tooltip)
 
     def on_value_changed(self, *args, **kwargs):
@@ -464,6 +464,5 @@ class NodeFilePath(NodeLineEdit):
 
     def _on_select_file(self):
         file_path = FileDialog.getOpenFileName(ext_filter=self._ext)
-        file = file_path[0] or None
-        if file:
+        if file := file_path[0] or None:
             self.value = file

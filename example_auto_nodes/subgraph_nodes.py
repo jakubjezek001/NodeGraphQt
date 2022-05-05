@@ -36,8 +36,9 @@ class SubGraph(SubGraphNode):
         return output_node
 
     def publish(self, file_path, node_name, node_identifier, node_class_name):
-        file_path = super(SubGraph, self).publish(file_path, node_name, node_identifier, node_class_name)
-        if file_path:
+        if file_path := super(SubGraph, self).publish(
+            file_path, node_name, node_identifier, node_class_name
+        ):
             self.graph.register_node(Publish.create_node_class(file_path))
 
 
@@ -64,7 +65,7 @@ class SubGraphOutput(SubGraphOutputNode):
 def read_json(file_path):
     file_path = file_path.strip()
     if not os.path.isfile(file_path):
-        raise IOError('node file {} does not exist.'.format(file_path))
+        raise IOError(f'node file {file_path} does not exist.')
     try:
         with open(file_path) as data_file:
             layout_data = json.load(data_file)
@@ -151,5 +152,5 @@ class Publish(SubGraph):
             new_node_class.NODE_NAME = data['node']['name']
             return new_node_class
         except:
-            print('file {} is not a correct published node.'.format(file_path))
+            print(f'file {file_path} is not a correct published node.')
             return None

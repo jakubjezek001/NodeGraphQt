@@ -75,7 +75,7 @@ class TabSearchWidget(QtWidgets.QLineEdit):
         self.returnPressed.connect(self._on_search_submitted)
 
     def __repr__(self):
-        return '<{} at {}>'.format(self.__class__.__name__, hex(id(self)))
+        return f'<{self.__class__.__name__} at {hex(id(self))}>'
 
     def _on_search_submitted(self, index=0):
         node_type = self._node_dict.get(self.text())
@@ -108,7 +108,7 @@ class TabSearchWidget(QtWidgets.QLineEdit):
                 self._node_dict[name] = node_types[0]
                 continue
             for node_id in node_types:
-                self._node_dict['{} ({})'.format(name, node_id)] = node_id
+                self._node_dict[f'{name} ({node_id})'] = node_id
         node_names = sorted(self._node_dict.keys())
         self._model.setStringList(node_names)
         self._completer.setModel(self._model)
@@ -147,7 +147,7 @@ class TabSearchMenuWidget(QtWidgets.QMenu):
         self._wire_signals()
 
     def __repr__(self):
-        return '<{} at {}>'.format(self.__class__.__name__, hex(id(self)))
+        return f'<{self.__class__.__name__} at {hex(id(self))}>'
 
     def keyPressEvent(self, event):
         super(TabSearchMenuWidget, self).keyPressEvent(event)
@@ -159,8 +159,7 @@ class TabSearchMenuWidget(QtWidgets.QMenu):
         pattern = '.*?'.join(key.lower())
         regex = re.compile(pattern)
         for item in collection:
-            match = regex.search(item.lower())
-            if match:
+            if match := regex.search(item.lower()):
                 suggestions.append((len(match.group()), match.start(), item))
 
         return [x for _, _, x in sorted(suggestions)]
@@ -219,8 +218,7 @@ class TabSearchMenuWidget(QtWidgets.QMenu):
                     return
 
             text = action.text()
-            node_type = self._node_dict.get(text)
-            if node_type:
+            if node_type := self._node_dict.get(text):
                 self.search_submitted.emit(node_type)
 
         self._close()
@@ -287,7 +285,7 @@ class TabSearchMenuWidget(QtWidgets.QMenu):
                     self._node_dict[name] = node_types[0]
                     continue
                 for node_id in node_types:
-                    self._node_dict['{} ({})'.format(name, node_id)] = node_id
+                    self._node_dict[f'{name} ({node_id})'] = node_id
             self.build_menu_tree()
             self.rebuild = False
 
